@@ -1,7 +1,7 @@
 import { useState } from "react";
 import Icon from "@/components/ui/icon";
 
-type Role = "manager" | "executor";
+type Role = "admin" | "manager" | "executor";
 type Screen =
   | "login"
   | "tasks"
@@ -11,9 +11,22 @@ type Screen =
   | "new-task"
   | "notifications"
   | "manager-profile"
-  | "task-detail";
+  | "task-detail"
+  | "admin";
 
 type TaskStatus = "new" | "in_progress" | "review" | "approved" | "rejected";
+
+interface AppUser {
+  id: number;
+  name: string;
+  email: string;
+  password: string;
+  role: Role;
+  avatar: string;
+  department: string;
+  active: boolean;
+  createdAt: string;
+}
 
 interface Task {
   id: number;
@@ -39,65 +52,19 @@ interface Notification {
   read: boolean;
 }
 
+const INITIAL_USERS: AppUser[] = [
+  { id: 1, name: "Администратор", email: "admin@taskphoto.ru", password: "admin123", role: "admin", avatar: "АД", department: "Администрация", active: true, createdAt: "01 янв, 2026" },
+  { id: 2, name: "Алексей Михайлов", email: "manager@taskphoto.ru", password: "manager123", role: "manager", avatar: "АМ", department: "Управление", active: true, createdAt: "10 янв, 2026" },
+  { id: 3, name: "Анна Петрова", email: "anna@taskphoto.ru", password: "anna123", role: "executor", avatar: "АП", department: "Торговый зал", active: true, createdAt: "15 янв, 2026" },
+  { id: 4, name: "Дмитрий Козлов", email: "dmitry@taskphoto.ru", password: "dmitry123", role: "executor", avatar: "ДК", department: "Склад", active: true, createdAt: "15 янв, 2026" },
+  { id: 5, name: "Мария Сидорова", email: "maria@taskphoto.ru", password: "maria123", role: "executor", avatar: "МС", department: "Оборудование", active: true, createdAt: "20 янв, 2026" },
+];
+
 const TASKS: Task[] = [
-  {
-    id: 1,
-    title: "Уборка торгового зала",
-    description: "Провести полную уборку торгового зала, протереть витрины и стеллажи",
-    assignee: "Анна Петрова",
-    assigneeAvatar: "АП",
-    status: "review",
-    priority: "high",
-    deadline: "Сегодня, 18:00",
-    location: "ТЦ Европейский, зал 3",
-    photoRequired: true,
-    photoUrl: "https://images.unsplash.com/photo-1613235788198-4d3e37b1ed72?w=400&q=80",
-    createdAt: "26 фев, 10:00",
-    category: "Уборка",
-  },
-  {
-    id: 2,
-    title: "Инвентаризация склада",
-    description: "Пересчитать товары на складе и внести данные в систему",
-    assignee: "Дмитрий Козлов",
-    assigneeAvatar: "ДК",
-    status: "in_progress",
-    priority: "medium",
-    deadline: "Завтра, 12:00",
-    location: "Склад №2, ул. Промышленная 15",
-    photoRequired: true,
-    createdAt: "25 фев, 09:00",
-    category: "Склад",
-  },
-  {
-    id: 3,
-    title: "Проверка оборудования",
-    description: "Осмотреть и проверить работоспособность кассового оборудования",
-    assignee: "Мария Сидорова",
-    assigneeAvatar: "МС",
-    status: "approved",
-    priority: "low",
-    deadline: "26 фев, 15:00",
-    location: "Офис на Тверской, 12",
-    photoRequired: true,
-    photoUrl: "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=400&q=80",
-    createdAt: "24 фев, 14:00",
-    category: "Оборудование",
-  },
-  {
-    id: 4,
-    title: "Расстановка товаров",
-    description: "Выложить новый товар согласно планограмме",
-    assignee: "Анна Петрова",
-    assigneeAvatar: "АП",
-    status: "new",
-    priority: "high",
-    deadline: "27 фев, 10:00",
-    location: "ТЦ Европейский, зал 1",
-    photoRequired: true,
-    createdAt: "26 фев, 11:30",
-    category: "Мерчандайзинг",
-  },
+  { id: 1, title: "Уборка торгового зала", description: "Провести полную уборку торгового зала, протереть витрины и стеллажи", assignee: "Анна Петрова", assigneeAvatar: "АП", status: "review", priority: "high", deadline: "Сегодня, 18:00", location: "ТЦ Европейский, зал 3", photoRequired: true, photoUrl: "https://images.unsplash.com/photo-1613235788198-4d3e37b1ed72?w=400&q=80", createdAt: "26 фев, 10:00", category: "Уборка" },
+  { id: 2, title: "Инвентаризация склада", description: "Пересчитать товары на складе и внести данные в систему", assignee: "Дмитрий Козлов", assigneeAvatar: "ДК", status: "in_progress", priority: "medium", deadline: "Завтра, 12:00", location: "Склад №2, ул. Промышленная 15", photoRequired: true, createdAt: "25 фев, 09:00", category: "Склад" },
+  { id: 3, title: "Проверка оборудования", description: "Осмотреть и проверить работоспособность кассового оборудования", assignee: "Мария Сидорова", assigneeAvatar: "МС", status: "approved", priority: "low", deadline: "26 фев, 15:00", location: "Офис на Тверской, 12", photoRequired: true, photoUrl: "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=400&q=80", createdAt: "24 фев, 14:00", category: "Оборудование" },
+  { id: 4, title: "Расстановка товаров", description: "Выложить новый товар согласно планограмме", assignee: "Анна Петрова", assigneeAvatar: "АП", status: "new", priority: "high", deadline: "27 фев, 10:00", location: "ТЦ Европейский, зал 1", photoRequired: true, createdAt: "26 фев, 11:30", category: "Мерчандайзинг" },
 ];
 
 const NOTIFICATIONS: Notification[] = [
@@ -121,28 +88,38 @@ const PRIORITY_CONFIG = {
   low: { label: "Низкий", color: "text-emerald-400", dot: "bg-emerald-400" },
 };
 
+const ROLE_CONFIG: Record<Role, { label: string; color: string; bg: string; icon: string }> = {
+  admin: { label: "Администратор", color: "text-rose-400", bg: "bg-rose-400/10 border-rose-400/30", icon: "Shield" },
+  manager: { label: "Менеджер", color: "text-violet-400", bg: "bg-violet-400/10 border-violet-400/30", icon: "LayoutDashboard" },
+  executor: { label: "Исполнитель", color: "text-cyan-400", bg: "bg-cyan-400/10 border-cyan-400/30", icon: "Hammer" },
+};
+
 export default function App() {
   const [screen, setScreen] = useState<Screen>("login");
-  const [role, setRole] = useState<Role>("manager");
+  const [currentUser, setCurrentUser] = useState<AppUser | null>(null);
+  const [users, setUsers] = useState<AppUser[]>(INITIAL_USERS);
   const [activeTab, setActiveTab] = useState<"tasks" | "camera" | "review" | "profile" | "notifications">("tasks");
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [tasks, setTasks] = useState<Task[]>(TASKS);
   const [notifications, setNotifications] = useState<Notification[]>(NOTIFICATIONS);
   const [filterStatus, setFilterStatus] = useState<TaskStatus | "all">("all");
-  const [loginEmail, setLoginEmail] = useState("");
-  const [loginPassword, setLoginPassword] = useState("");
-  const [showRoleSelect, setShowRoleSelect] = useState(false);
   const [newTask, setNewTask] = useState({ title: "", description: "", assignee: "", deadline: "", location: "", priority: "medium" as "high" | "medium" | "low", category: "" });
   const [cameraStep, setCameraStep] = useState<"intro" | "photo" | "location" | "done">("intro");
   const [reviewTab, setReviewTab] = useState<"pending" | "approved">("pending");
 
   const unreadCount = notifications.filter((n) => !n.read).length;
   const filteredTasks = tasks.filter((t) => filterStatus === "all" || t.status === filterStatus);
+  const role = currentUser?.role ?? "executor";
 
-  function handleLogin(selectedRole: Role) {
-    setRole(selectedRole);
-    setScreen("tasks");
+  function handleLogin(user: AppUser) {
+    setCurrentUser(user);
+    setScreen(user.role === "admin" ? "admin" : "tasks");
     setActiveTab("tasks");
+  }
+
+  function handleLogout() {
+    setCurrentUser(null);
+    setScreen("login");
   }
 
   function handleNav(tab: "tasks" | "camera" | "review" | "profile" | "notifications") {
@@ -199,92 +176,93 @@ export default function App() {
   return (
     <div className="app-shell font-body">
       {screen === "login" && (
-        <LoginScreen
-          onLogin={handleLogin}
-          showRoleSelect={showRoleSelect}
-          setShowRoleSelect={setShowRoleSelect}
-          email={loginEmail}
-          setEmail={setLoginEmail}
-          password={loginPassword}
-          setPassword={setLoginPassword}
+        <LoginScreen users={users} onLogin={handleLogin} />
+      )}
+
+      {screen === "admin" && currentUser && (
+        <AdminScreen
+          currentUser={currentUser}
+          users={users}
+          setUsers={setUsers}
+          onLogout={handleLogout}
         />
       )}
 
-      {screen !== "login" && (
+      {screen !== "login" && screen !== "admin" && currentUser && (
         <div className="flex flex-col h-full">
           <div className="flex-1 overflow-y-auto">
             {screen === "tasks" && (
-              <TasksScreen
-                tasks={filteredTasks}
-                allTasks={tasks}
-                filterStatus={filterStatus}
-                setFilterStatus={setFilterStatus}
-                role={role}
-                onTaskClick={(t) => { setSelectedTask(t); setScreen("task-detail"); }}
-                onNewTask={() => setScreen("new-task")}
-                stats={stats}
-              />
+              <TasksScreen tasks={filteredTasks} allTasks={tasks} filterStatus={filterStatus} setFilterStatus={setFilterStatus} role={role as "manager" | "executor"} onTaskClick={(t) => { setSelectedTask(t); setScreen("task-detail"); }} onNewTask={() => setScreen("new-task")} stats={stats} />
             )}
             {screen === "task-detail" && selectedTask && (
-              <TaskDetailScreen
-                task={selectedTask}
-                role={role}
-                onBack={() => setScreen("tasks")}
-                onApprove={handleApprove}
-                onReject={handleReject}
-                onStartWork={(id) => {
-                  setTasks((prev) => prev.map((t) => t.id === id ? { ...t, status: "in_progress" } : t));
-                  setScreen("tasks");
-                }}
-              />
+              <TaskDetailScreen task={selectedTask} role={role as "manager" | "executor"} onBack={() => setScreen("tasks")} onApprove={handleApprove} onReject={handleReject} onStartWork={(id) => { setTasks((prev) => prev.map((t) => t.id === id ? { ...t, status: "in_progress" } : t)); setScreen("tasks"); }} />
             )}
             {screen === "camera" && (
               <CameraScreen step={cameraStep} setStep={setCameraStep} tasks={tasks} setTasks={setTasks} />
             )}
             {screen === "review" && (
-              <ReviewScreen
-                tasks={tasks}
-                tab={reviewTab}
-                setTab={setReviewTab}
-                onApprove={handleApprove}
-                onReject={handleReject}
-                onTaskClick={(t) => { setSelectedTask(t); setScreen("task-detail"); }}
-              />
+              <ReviewScreen tasks={tasks} tab={reviewTab} setTab={setReviewTab} onApprove={handleApprove} onReject={handleReject} onTaskClick={(t) => { setSelectedTask(t); setScreen("task-detail"); }} />
             )}
             {screen === "notifications" && (
               <NotificationsScreen notifications={notifications} onMarkAll={markAllRead} />
             )}
             {screen === "manager-profile" && (
-              <ManagerProfileScreen stats={stats} tasks={tasks} />
+              <ManagerProfileScreen stats={stats} tasks={tasks} currentUser={currentUser} onLogout={handleLogout} />
             )}
             {screen === "profile" && (
-              <ExecutorProfileScreen tasks={tasks} />
+              <ExecutorProfileScreen tasks={tasks} currentUser={currentUser} onLogout={handleLogout} />
             )}
             {screen === "new-task" && (
-              <NewTaskScreen
-                newTask={newTask}
-                setNewTask={setNewTask}
-                onCreate={handleCreateTask}
-                onBack={() => setScreen("tasks")}
-              />
+              <NewTaskScreen newTask={newTask} setNewTask={setNewTask} onCreate={handleCreateTask} onBack={() => setScreen("tasks")} users={users} />
             )}
           </div>
-          <BottomNav activeTab={activeTab} onNav={handleNav} role={role} unreadCount={unreadCount} />
+          <BottomNav activeTab={activeTab} onNav={handleNav} role={role as "manager" | "executor"} unreadCount={unreadCount} />
         </div>
       )}
     </div>
   );
 }
 
-function LoginScreen({ onLogin, showRoleSelect, setShowRoleSelect, email, setEmail, password, setPassword }: {
-  onLogin: (role: Role) => void;
-  showRoleSelect: boolean;
-  setShowRoleSelect: (v: boolean) => void;
-  email: string;
-  setEmail: (v: string) => void;
-  password: string;
-  setPassword: (v: string) => void;
-}) {
+/* ═══════════════════════════════ LOGIN ═══════════════════════════════ */
+
+function LoginScreen({ users, onLogin }: { users: AppUser[]; onLogin: (u: AppUser) => void }) {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+
+  function handleSubmit() {
+    if (!email || !password) {
+      setError("Введите email и пароль");
+      return;
+    }
+    setLoading(true);
+    setError("");
+
+    setTimeout(() => {
+      const found = users.find(
+        (u) => u.email.toLowerCase() === email.toLowerCase() && u.password === password
+      );
+      if (!found) {
+        setError("Данный профиль в системе не зарегистрирован");
+        setLoading(false);
+        return;
+      }
+      if (!found.active) {
+        setError("Ваш аккаунт деактивирован. Обратитесь к администратору");
+        setLoading(false);
+        return;
+      }
+      setLoading(false);
+      onLogin(found);
+    }, 600);
+  }
+
+  function handleKeyDown(e: React.KeyboardEvent) {
+    if (e.key === "Enter") handleSubmit();
+  }
+
   return (
     <div className="login-bg flex flex-col items-center justify-center min-h-screen p-6 relative overflow-hidden">
       <div className="login-orb login-orb-1" />
@@ -300,63 +278,343 @@ function LoginScreen({ onLogin, showRoleSelect, setShowRoleSelect, email, setEma
           <p className="text-white/60 text-sm">Фотомониторинг выполнения задач</p>
         </div>
 
-        {!showRoleSelect ? (
-          <div className="glass-card p-6 space-y-4">
-            <div>
-              <label className="field-label">Email</label>
-              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@company.ru" className="input-field" />
-            </div>
-            <div>
-              <label className="field-label">Пароль</label>
-              <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" className="input-field" />
-            </div>
-            <button onClick={() => setShowRoleSelect(true)} className="btn-primary w-full mt-2">
-              Войти
-              <Icon name="ArrowRight" size={18} />
-            </button>
-            <p className="text-center text-white/40 text-xs">
-              Забыли пароль? <span className="text-violet-400 cursor-pointer">Восстановить</span>
-            </p>
+        <div className="glass-card p-6 space-y-4">
+          <div>
+            <label className="field-label">Email</label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => { setEmail(e.target.value); setError(""); }}
+              onKeyDown={handleKeyDown}
+              placeholder="you@company.ru"
+              className={`input-field ${error ? "input-field-error" : ""}`}
+              autoComplete="email"
+            />
           </div>
-        ) : (
-          <div className="space-y-3 animate-scale-in">
-            <p className="text-white/60 text-center text-sm mb-5">Выберите вашу роль в системе</p>
-            <button onClick={() => onLogin("manager")} className="role-card group">
-              <div className="role-icon bg-gradient-to-br from-violet-500 to-indigo-600">
-                <Icon name="LayoutDashboard" size={24} className="text-white" />
-              </div>
-              <div className="flex-1 text-left">
-                <div className="text-white font-semibold text-base">Менеджер</div>
-                <div className="text-white/50 text-xs">Создаю задачи и проверяю отчёты</div>
-              </div>
-              <Icon name="ChevronRight" size={18} className="text-white/30 group-hover:text-white/70 transition-colors" />
-            </button>
-            <button onClick={() => onLogin("executor")} className="role-card group">
-              <div className="role-icon bg-gradient-to-br from-cyan-500 to-blue-600">
-                <Icon name="Hammer" size={24} className="text-white" />
-              </div>
-              <div className="flex-1 text-left">
-                <div className="text-white font-semibold text-base">Исполнитель</div>
-                <div className="text-white/50 text-xs">Выполняю задачи и отправляю фото</div>
-              </div>
-              <Icon name="ChevronRight" size={18} className="text-white/30 group-hover:text-white/70 transition-colors" />
-            </button>
-            <button onClick={() => setShowRoleSelect(false)} className="text-white/40 text-xs w-full text-center mt-2 hover:text-white/60 transition-colors">
-              ← Назад
-            </button>
+          <div>
+            <label className="field-label">Пароль</label>
+            <div className="relative">
+              <input
+                type={showPassword ? "text" : "password"}
+                value={password}
+                onChange={(e) => { setPassword(e.target.value); setError(""); }}
+                onKeyDown={handleKeyDown}
+                placeholder="••••••••"
+                className={`input-field pr-12 ${error ? "input-field-error" : ""}`}
+                autoComplete="current-password"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((p) => !p)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/60 transition-colors"
+              >
+                <Icon name={showPassword ? "EyeOff" : "Eye"} size={18} />
+              </button>
+            </div>
           </div>
-        )}
+
+          {error && (
+            <div className="login-error animate-scale-in">
+              <Icon name="AlertCircle" size={16} className="text-red-400 flex-shrink-0" />
+              <p className="text-red-400 text-sm">{error}</p>
+            </div>
+          )}
+
+          <button
+            onClick={handleSubmit}
+            disabled={loading}
+            className="btn-primary w-full mt-2 disabled:opacity-60"
+          >
+            {loading ? (
+              <>
+                <div className="login-spinner" />
+                Проверка...
+              </>
+            ) : (
+              <>
+                Войти
+                <Icon name="ArrowRight" size={18} />
+              </>
+            )}
+          </button>
+        </div>
+
+        <div className="mt-5 glass-card p-4">
+          <p className="text-white/40 text-xs text-center mb-3 font-semibold uppercase tracking-wider">Демо-доступ</p>
+          <div className="space-y-2">
+            {[
+              { label: "Администратор", email: "admin@taskphoto.ru", pass: "admin123", color: "text-rose-400" },
+              { label: "Менеджер", email: "manager@taskphoto.ru", pass: "manager123", color: "text-violet-400" },
+              { label: "Исполнитель", email: "anna@taskphoto.ru", pass: "anna123", color: "text-cyan-400" },
+            ].map((d) => (
+              <button
+                key={d.email}
+                onClick={() => { setEmail(d.email); setPassword(d.pass); setError(""); }}
+                className="demo-chip"
+              >
+                <span className={`text-xs font-semibold ${d.color}`}>{d.label}</span>
+                <span className="text-white/30 text-xs">{d.email}</span>
+              </button>
+            ))}
+          </div>
+        </div>
       </div>
     </div>
   );
 }
+
+/* ═══════════════════════════════ ADMIN ═══════════════════════════════ */
+
+function AdminScreen({ currentUser, users, setUsers, onLogout }: {
+  currentUser: AppUser;
+  users: AppUser[];
+  setUsers: (fn: (prev: AppUser[]) => AppUser[]) => void;
+  onLogout: () => void;
+}) {
+  const [tab, setTab] = useState<"users" | "new">("users");
+  const [newUser, setNewUser] = useState({ name: "", email: "", password: "", role: "executor" as Role, department: "" });
+  const [formError, setFormError] = useState("");
+  const [successMsg, setSuccessMsg] = useState("");
+  const [deleteId, setDeleteId] = useState<number | null>(null);
+
+  function handleAddUser() {
+    setFormError("");
+    if (!newUser.name || !newUser.email || !newUser.password) {
+      setFormError("Заполните все обязательные поля");
+      return;
+    }
+    if (users.find((u) => u.email.toLowerCase() === newUser.email.toLowerCase())) {
+      setFormError("Пользователь с таким email уже существует");
+      return;
+    }
+    const avatar = newUser.name.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase();
+    const created: AppUser = {
+      id: Math.max(...users.map((u) => u.id)) + 1,
+      name: newUser.name,
+      email: newUser.email,
+      password: newUser.password,
+      role: newUser.role,
+      avatar,
+      department: newUser.department || "Не указан",
+      active: true,
+      createdAt: new Date().toLocaleDateString("ru-RU", { day: "2-digit", month: "short", year: "numeric" }),
+    };
+    setUsers((prev) => [...prev, created]);
+    setNewUser({ name: "", email: "", password: "", role: "executor", department: "" });
+    setSuccessMsg(`Пользователь "${created.name}" успешно добавлен`);
+    setTab("users");
+    setTimeout(() => setSuccessMsg(""), 3000);
+  }
+
+  function toggleActive(id: number) {
+    setUsers((prev) => prev.map((u) => u.id === id ? { ...u, active: !u.active } : u));
+  }
+
+  function handleDelete(id: number) {
+    setUsers((prev) => prev.filter((u) => u.id !== id));
+    setDeleteId(null);
+  }
+
+  return (
+    <div className="app-shell font-body">
+      <div className="screen-content animate-fade-in">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-3">
+            <div className="admin-badge-icon">
+              <Icon name="Shield" size={20} className="text-white" />
+            </div>
+            <div>
+              <h1 className="font-display text-xl font-black text-white">Администратор</h1>
+              <p className="text-white/40 text-xs">{currentUser.name}</p>
+            </div>
+          </div>
+          <button onClick={onLogout} className="btn-back" title="Выйти">
+            <Icon name="LogOut" size={17} className="text-white/60" />
+          </button>
+        </div>
+
+        {/* Stats row */}
+        <div className="grid grid-cols-3 gap-3 mb-5">
+          <StatCard label="Всего" value={users.length} color="from-rose-500 to-pink-600" icon="Users" />
+          <StatCard label="Активных" value={users.filter((u) => u.active).length} color="from-emerald-500 to-teal-600" icon="UserCheck" />
+          <StatCard label="Ролей" value={3} color="from-violet-500 to-indigo-600" icon="Shield" />
+        </div>
+
+        {/* Success */}
+        {successMsg && (
+          <div className="admin-success animate-scale-in mb-4">
+            <Icon name="CheckCircle" size={16} className="text-emerald-400 flex-shrink-0" />
+            <p className="text-emerald-400 text-sm">{successMsg}</p>
+          </div>
+        )}
+
+        {/* Tabs */}
+        <div className="tab-switch mb-5">
+          <button onClick={() => setTab("users")} className={`tab-btn ${tab === "users" ? "tab-active" : "tab-inactive"}`}>
+            <Icon name="Users" size={15} />
+            Пользователи
+            <span className="tab-count">{users.length}</span>
+          </button>
+          <button onClick={() => setTab("new")} className={`tab-btn ${tab === "new" ? "tab-active" : "tab-inactive"}`}>
+            <Icon name="UserPlus" size={15} />
+            Добавить
+          </button>
+        </div>
+
+        {/* Users list */}
+        {tab === "users" && (
+          <div className="space-y-3">
+            {users.map((u, i) => (
+              <div key={u.id} className="glass-card p-4 animate-fade-in" style={{ animationDelay: `${i * 0.05}s`, opacity: 0 }}>
+                <div className="flex items-center gap-3">
+                  <div className={`user-avatar-admin ${u.active ? "opacity-100" : "opacity-40"}`}
+                    style={{ background: u.role === "admin" ? "linear-gradient(135deg,#f43f5e,#e11d48)" : u.role === "manager" ? "linear-gradient(135deg,#7c3aed,#4f46e5)" : "linear-gradient(135deg,#06b6d4,#3b82f6)" }}>
+                    {u.avatar}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-0.5">
+                      <p className={`text-sm font-semibold truncate ${u.active ? "text-white" : "text-white/40"}`}>{u.name}</p>
+                      {!u.active && <span className="text-xs text-red-400 bg-red-400/10 border border-red-400/20 rounded-full px-2 py-0.5">Откл.</span>}
+                    </div>
+                    <p className="text-white/40 text-xs truncate">{u.email}</p>
+                    <div className="flex items-center gap-2 mt-1">
+                      <span className={`status-badge text-xs ${ROLE_CONFIG[u.role].bg} ${ROLE_CONFIG[u.role].color}`}>
+                        <Icon name={ROLE_CONFIG[u.role].icon} size={10} />
+                        {ROLE_CONFIG[u.role].label}
+                      </span>
+                      <span className="text-white/30 text-xs">{u.department}</span>
+                    </div>
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    {u.id !== currentUser.id && (
+                      <>
+                        <button
+                          onClick={() => toggleActive(u.id)}
+                          className={`user-action-btn ${u.active ? "text-amber-400 bg-amber-400/10" : "text-emerald-400 bg-emerald-400/10"}`}
+                          title={u.active ? "Деактивировать" : "Активировать"}
+                        >
+                          <Icon name={u.active ? "UserX" : "UserCheck"} size={14} />
+                        </button>
+                        <button
+                          onClick={() => setDeleteId(u.id)}
+                          className="user-action-btn text-red-400 bg-red-400/10"
+                          title="Удалить"
+                        >
+                          <Icon name="Trash2" size={14} />
+                        </button>
+                      </>
+                    )}
+                    {u.id === currentUser.id && (
+                      <span className="text-white/20 text-xs px-1">Вы</span>
+                    )}
+                  </div>
+                </div>
+                <div className="mt-3 pt-3 border-t border-white/5 flex items-center justify-between text-xs text-white/30">
+                  <span className="flex items-center gap-1"><Icon name="Calendar" size={11} />Добавлен: {u.createdAt}</span>
+                  <span className="flex items-center gap-1">
+                    <div className={`w-1.5 h-1.5 rounded-full ${u.active ? "bg-emerald-400" : "bg-red-400"}`} />
+                    {u.active ? "Активен" : "Отключён"}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Add user form */}
+        {tab === "new" && (
+          <div className="space-y-4 animate-scale-in">
+            <div className="glass-card p-5 space-y-4">
+              <h3 className="text-white font-semibold flex items-center gap-2">
+                <Icon name="UserPlus" size={18} className="text-violet-400" />
+                Новый пользователь
+              </h3>
+
+              <div>
+                <label className="field-label">Полное имя *</label>
+                <input className="input-field" placeholder="Иванов Иван Иванович" value={newUser.name} onChange={(e) => setNewUser((p) => ({ ...p, name: e.target.value }))} />
+              </div>
+              <div>
+                <label className="field-label">Email *</label>
+                <input type="email" className="input-field" placeholder="ivanov@company.ru" value={newUser.email} onChange={(e) => setNewUser((p) => ({ ...p, email: e.target.value }))} />
+              </div>
+              <div>
+                <label className="field-label">Пароль *</label>
+                <input type="text" className="input-field" placeholder="Придумайте пароль" value={newUser.password} onChange={(e) => setNewUser((p) => ({ ...p, password: e.target.value }))} />
+              </div>
+              <div>
+                <label className="field-label">Отдел / Должность</label>
+                <input className="input-field" placeholder="Например: Торговый зал" value={newUser.department} onChange={(e) => setNewUser((p) => ({ ...p, department: e.target.value }))} />
+              </div>
+              <div>
+                <label className="field-label">Роль</label>
+                <div className="grid grid-cols-3 gap-2">
+                  {(["admin", "manager", "executor"] as Role[]).map((r) => (
+                    <button
+                      key={r}
+                      onClick={() => setNewUser((p) => ({ ...p, role: r }))}
+                      className={`py-2.5 rounded-xl border text-xs font-semibold transition-all flex flex-col items-center gap-1 ${newUser.role === r ? `${ROLE_CONFIG[r].bg} ${ROLE_CONFIG[r].color}` : "border-white/10 text-white/40 bg-white/5"}`}
+                    >
+                      <Icon name={ROLE_CONFIG[r].icon} size={16} />
+                      {ROLE_CONFIG[r].label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {formError && (
+                <div className="login-error">
+                  <Icon name="AlertCircle" size={15} className="text-red-400 flex-shrink-0" />
+                  <p className="text-red-400 text-sm">{formError}</p>
+                </div>
+              )}
+
+              <button
+                onClick={handleAddUser}
+                disabled={!newUser.name || !newUser.email || !newUser.password}
+                className="btn-primary w-full disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                <Icon name="UserPlus" size={18} />
+                Добавить пользователя
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Delete confirm modal */}
+      {deleteId !== null && (
+        <div className="modal-overlay" onClick={() => setDeleteId(null)}>
+          <div className="modal-box animate-scale-in" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-center mb-4">
+              <div className="w-14 h-14 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center justify-center">
+                <Icon name="Trash2" size={24} className="text-red-400" />
+              </div>
+            </div>
+            <h3 className="text-white font-bold text-lg text-center mb-2">Удалить пользователя?</h3>
+            <p className="text-white/50 text-sm text-center mb-6">
+              {users.find((u) => u.id === deleteId)?.name} будет удалён из системы. Это действие нельзя отменить.
+            </p>
+            <div className="flex gap-3">
+              <button onClick={() => setDeleteId(null)} className="btn-secondary flex-1">Отмена</button>
+              <button onClick={() => handleDelete(deleteId)} className="btn-danger flex-1">Удалить</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ═══════════════════════════════ TASKS ═══════════════════════════════ */
 
 function TasksScreen({ tasks, allTasks, filterStatus, setFilterStatus, role, onTaskClick, onNewTask, stats }: {
   tasks: Task[];
   allTasks: Task[];
   filterStatus: TaskStatus | "all";
   setFilterStatus: (s: TaskStatus | "all") => void;
-  role: Role;
+  role: "manager" | "executor";
   onTaskClick: (t: Task) => void;
   onNewTask: () => void;
   stats: { total: number; approved: number; inProgress: number; review: number; approvalRate: number };
@@ -404,12 +662,7 @@ function TasksScreen({ tasks, allTasks, filterStatus, setFilterStatus, role, onT
 
       <div className="space-y-3">
         {tasks.map((task, i) => (
-          <button
-            key={task.id}
-            onClick={() => onTaskClick(task)}
-            className="task-card animate-fade-in w-full text-left"
-            style={{ animationDelay: `${i * 0.06}s`, opacity: 0 }}
-          >
+          <button key={task.id} onClick={() => onTaskClick(task)} className="task-card animate-fade-in w-full text-left" style={{ animationDelay: `${i * 0.06}s`, opacity: 0 }}>
             <div className="flex items-start gap-3">
               <div className="task-avatar">{task.assigneeAvatar}</div>
               <div className="flex-1 min-w-0">
@@ -422,14 +675,8 @@ function TasksScreen({ tasks, allTasks, filterStatus, setFilterStatus, role, onT
                 </div>
                 <h3 className="text-white font-semibold text-sm leading-tight mb-1 truncate">{task.title}</h3>
                 <div className="flex items-center gap-3 text-white/40 text-xs">
-                  <span className="flex items-center gap-1">
-                    <Icon name="MapPin" size={11} />
-                    {task.location.split(",")[0]}
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <Icon name="Clock" size={11} />
-                    {task.deadline}
-                  </span>
+                  <span className="flex items-center gap-1"><Icon name="MapPin" size={11} />{task.location.split(",")[0]}</span>
+                  <span className="flex items-center gap-1"><Icon name="Clock" size={11} />{task.deadline}</span>
                 </div>
               </div>
               {task.photoUrl && (
@@ -461,9 +708,11 @@ function StatCard({ label, value, color, icon }: { label: string; value: string 
   );
 }
 
+/* ═══════════════════════════════ TASK DETAIL ═══════════════════════════════ */
+
 function TaskDetailScreen({ task, role, onBack, onApprove, onReject, onStartWork }: {
   task: Task;
-  role: Role;
+  role: "manager" | "executor";
   onBack: () => void;
   onApprove: (id: number) => void;
   onReject: (id: number) => void;
@@ -505,7 +754,7 @@ function TaskDetailScreen({ task, role, onBack, onApprove, onReject, onStartWork
             <span className="text-white/70 text-sm font-semibold">Фото отчёт</span>
           </div>
           <img src={task.photoUrl} alt="Фото выполнения" className="w-full h-52 object-cover" />
-          <div className="p-3 flex items-center gap-2 text-xs text-white/40">
+          <div className="p-3 flex items-center gap-2 text-xs">
             <Icon name="MapPin" size={12} className="text-emerald-400" />
             <span className="text-emerald-400">Геолокация подтверждена</span>
           </div>
@@ -558,6 +807,8 @@ function DetailRow({ icon, label, value, valueColor }: { icon: string; label: st
   );
 }
 
+/* ═══════════════════════════════ CAMERA ═══════════════════════════════ */
+
 function CameraScreen({ step, setStep, tasks, setTasks }: {
   step: "intro" | "photo" | "location" | "done";
   setStep: (s: "intro" | "photo" | "location" | "done") => void;
@@ -568,11 +819,7 @@ function CameraScreen({ step, setStep, tasks, setTasks }: {
 
   function handleSubmit() {
     if (myTask) {
-      setTasks((prev) => prev.map((t) => t.id === myTask.id ? {
-        ...t,
-        status: "review",
-        photoUrl: "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=400&q=80"
-      } : t));
+      setTasks((prev) => prev.map((t) => t.id === myTask.id ? { ...t, status: "review", photoUrl: "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=400&q=80" } : t));
     }
     setStep("done");
   }
@@ -629,7 +876,6 @@ function CameraScreen({ step, setStep, tasks, setTasks }: {
               <div className="text-center">
                 <Icon name="Camera" size={48} className="text-white/30 mb-3" />
                 <p className="text-white/50 text-sm">Камера активна</p>
-                <p className="text-white/30 text-xs">Наведите на объект</p>
               </div>
             </div>
           </div>
@@ -684,14 +930,14 @@ function CameraScreen({ step, setStep, tasks, setTasks }: {
               </div>
             ))}
           </div>
-          <button onClick={() => setStep("intro")} className="btn-secondary w-full mt-4">
-            Новый отчёт
-          </button>
+          <button onClick={() => setStep("intro")} className="btn-secondary w-full mt-4">Новый отчёт</button>
         </div>
       )}
     </div>
   );
 }
+
+/* ═══════════════════════════════ REVIEW ═══════════════════════════════ */
 
 function ReviewScreen({ tasks, tab, setTab, onApprove, onReject, onTaskClick }: {
   tasks: Task[];
@@ -737,8 +983,7 @@ function ReviewScreen({ tasks, tab, setTab, onApprove, onReject, onTaskClick }: 
                     <span className="text-white text-sm font-semibold">{task.assignee}</span>
                   </div>
                   <div className="flex items-center gap-1 text-xs text-emerald-400 bg-black/40 rounded-full px-2 py-1">
-                    <Icon name="MapPin" size={11} />
-                    GPS ✓
+                    <Icon name="MapPin" size={11} />GPS ✓
                   </div>
                 </div>
               </div>
@@ -749,12 +994,10 @@ function ReviewScreen({ tasks, tab, setTab, onApprove, onReject, onTaskClick }: 
               {tab === "pending" ? (
                 <div className="flex gap-2">
                   <button onClick={() => onApprove(task.id)} className="btn-success flex-1 text-sm py-2">
-                    <Icon name="Check" size={15} />
-                    Утвердить
+                    <Icon name="Check" size={15} />Утвердить
                   </button>
                   <button onClick={() => onReject(task.id)} className="btn-danger flex-1 text-sm py-2">
-                    <Icon name="X" size={15} />
-                    Отклонить
+                    <Icon name="X" size={15} />Отклонить
                   </button>
                   <button onClick={() => onTaskClick(task)} className="btn-ghost px-3">
                     <Icon name="Eye" size={15} />
@@ -780,6 +1023,8 @@ function ReviewScreen({ tasks, tab, setTab, onApprove, onReject, onTaskClick }: 
   );
 }
 
+/* ═══════════════════════════════ NOTIFICATIONS ═══════════════════════════════ */
+
 function NotificationsScreen({ notifications, onMarkAll }: { notifications: Notification[]; onMarkAll: () => void }) {
   const icons: Record<string, string> = { success: "CheckCircle", warning: "AlertTriangle", info: "Bell" };
   const colors: Record<string, string> = { success: "text-emerald-400", warning: "text-amber-400", info: "text-violet-400" };
@@ -794,14 +1039,9 @@ function NotificationsScreen({ notifications, onMarkAll }: { notifications: Noti
         </div>
         <button onClick={onMarkAll} className="text-violet-400 text-xs font-semibold">Прочитать все</button>
       </div>
-
       <div className="space-y-2">
         {notifications.map((n, i) => (
-          <div
-            key={n.id}
-            className={`notif-card animate-fade-in`}
-            style={{ animationDelay: `${i * 0.05}s`, opacity: 0 }}
-          >
+          <div key={n.id} className={`notif-card animate-fade-in ${n.read ? "opacity-60" : ""}`} style={{ animationDelay: `${i * 0.05}s`, opacity: n.read ? 0.6 : 0 }}>
             <div className={`notif-icon ${bgs[n.type]}`}>
               <Icon name={icons[n.type]} size={18} className={colors[n.type]} />
             </div>
@@ -817,9 +1057,13 @@ function NotificationsScreen({ notifications, onMarkAll }: { notifications: Noti
   );
 }
 
-function ManagerProfileScreen({ stats, tasks }: {
+/* ═══════════════════════════════ PROFILES ═══════════════════════════════ */
+
+function ManagerProfileScreen({ stats, tasks, currentUser, onLogout }: {
   stats: { total: number; approved: number; inProgress: number; review: number; approvalRate: number };
   tasks: Task[];
+  currentUser: AppUser;
+  onLogout: () => void;
 }) {
   const employees = [
     { name: "Анна Петрова", avatar: "АП", tasks: tasks.filter((t) => t.assignee === "Анна Петрова"), color: "from-pink-500 to-rose-600" },
@@ -829,18 +1073,21 @@ function ManagerProfileScreen({ stats, tasks }: {
 
   return (
     <div className="screen-content animate-fade-in">
-      <div className="screen-header">
+      <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="font-display text-2xl font-black text-white">Профиль</h1>
           <p className="text-white/50 text-sm">Менеджер</p>
         </div>
+        <button onClick={onLogout} className="btn-back" title="Выйти">
+          <Icon name="LogOut" size={17} className="text-white/60" />
+        </button>
       </div>
 
       <div className="manager-hero mb-6">
-        <div className="manager-avatar">АМ</div>
+        <div className="manager-avatar">{currentUser.avatar}</div>
         <div>
-          <h2 className="text-white font-display font-bold text-lg">Алексей Михайлов</h2>
-          <p className="text-white/50 text-sm">Старший менеджер</p>
+          <h2 className="text-white font-display font-bold text-lg">{currentUser.name}</h2>
+          <p className="text-white/50 text-sm">{currentUser.department}</p>
           <div className="flex items-center gap-1 mt-1">
             <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
             <span className="text-emerald-400 text-xs">В сети</span>
@@ -863,9 +1110,7 @@ function ManagerProfileScreen({ stats, tasks }: {
           return (
             <div key={emp.name} className="glass-card p-4">
               <div className="flex items-center gap-3 mb-3">
-                <div className={`w-10 h-10 rounded-full bg-gradient-to-br ${emp.color} flex items-center justify-center text-white font-bold text-sm`}>
-                  {emp.avatar}
-                </div>
+                <div className={`w-10 h-10 rounded-full bg-gradient-to-br ${emp.color} flex items-center justify-center text-white font-bold text-sm`}>{emp.avatar}</div>
                 <div className="flex-1">
                   <p className="text-white font-semibold text-sm">{emp.name}</p>
                   <p className="text-white/40 text-xs">Задач: {emp.tasks.length} · Выполнено: {done}</p>
@@ -873,10 +1118,7 @@ function ManagerProfileScreen({ stats, tasks }: {
                 <span className="text-emerald-400 font-bold text-sm">{rate}%</span>
               </div>
               <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-gradient-to-r from-emerald-500 to-teal-400 rounded-full transition-all duration-700"
-                  style={{ width: `${rate}%` }}
-                />
+                <div className="h-full bg-gradient-to-r from-emerald-500 to-teal-400 rounded-full" style={{ width: `${rate}%` }} />
               </div>
             </div>
           );
@@ -886,25 +1128,32 @@ function ManagerProfileScreen({ stats, tasks }: {
   );
 }
 
-function ExecutorProfileScreen({ tasks }: { tasks: Task[] }) {
-  const myTasks = tasks.filter((t) => t.assignee === "Анна Петрова");
+function ExecutorProfileScreen({ tasks, currentUser, onLogout }: {
+  tasks: Task[];
+  currentUser: AppUser;
+  onLogout: () => void;
+}) {
+  const myTasks = tasks.filter((t) => t.assignee === currentUser.name);
   const done = myTasks.filter((t) => t.status === "approved").length;
   const rate = myTasks.length > 0 ? Math.round((done / myTasks.length) * 100) : 0;
 
   return (
     <div className="screen-content animate-fade-in">
-      <div className="screen-header">
+      <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="font-display text-2xl font-black text-white">Профиль</h1>
           <p className="text-white/50 text-sm">Исполнитель</p>
         </div>
+        <button onClick={onLogout} className="btn-back" title="Выйти">
+          <Icon name="LogOut" size={17} className="text-white/60" />
+        </button>
       </div>
 
       <div className="manager-hero mb-6">
-        <div className="executor-avatar">АП</div>
+        <div className="executor-avatar">{currentUser.avatar}</div>
         <div>
-          <h2 className="text-white font-display font-bold text-lg">Анна Петрова</h2>
-          <p className="text-white/50 text-sm">Старший специалист</p>
+          <h2 className="text-white font-display font-bold text-lg">{currentUser.name}</h2>
+          <p className="text-white/50 text-sm">{currentUser.department}</p>
           <div className="flex items-center gap-1 mt-1">
             <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
             <span className="text-emerald-400 text-xs">В сети</span>
@@ -918,24 +1167,17 @@ function ExecutorProfileScreen({ tasks }: { tasks: Task[] }) {
         <StatCard label="Рейтинг" value={`${rate}%`} color="from-violet-500 to-indigo-600" icon="Star" />
       </div>
 
-      <div className="glass-card p-5 mb-4">
+      <div className="glass-card p-5">
         <h3 className="text-white font-semibold mb-3">Моя эффективность</h3>
         <div className="space-y-3">
-          {[
-            { label: "Выполнение в срок", val: 87 },
-            { label: "Одобрение с первого раза", val: rate },
-            { label: "Фото-отчёты", val: 100 },
-          ].map((item) => (
+          {[{ label: "Выполнение в срок", val: 87 }, { label: "Одобрение с первого раза", val: rate }, { label: "Фото-отчёты", val: 100 }].map((item) => (
             <div key={item.label}>
               <div className="flex justify-between text-xs mb-1">
                 <span className="text-white/60">{item.label}</span>
                 <span className="text-white font-semibold">{item.val}%</span>
               </div>
               <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-gradient-to-r from-violet-500 to-cyan-400 rounded-full"
-                  style={{ width: `${item.val}%` }}
-                />
+                <div className="h-full bg-gradient-to-r from-violet-500 to-cyan-400 rounded-full" style={{ width: `${item.val}%` }} />
               </div>
             </div>
           ))}
@@ -945,12 +1187,16 @@ function ExecutorProfileScreen({ tasks }: { tasks: Task[] }) {
   );
 }
 
-function NewTaskScreen({ newTask, setNewTask, onCreate, onBack }: {
+/* ═══════════════════════════════ NEW TASK ═══════════════════════════════ */
+
+function NewTaskScreen({ newTask, setNewTask, onCreate, onBack, users }: {
   newTask: { title: string; description: string; assignee: string; deadline: string; location: string; priority: "high" | "medium" | "low"; category: string };
   setNewTask: (fn: (prev: typeof newTask) => typeof newTask) => void;
   onCreate: () => void;
   onBack: () => void;
+  users: AppUser[];
 }) {
+  const executors = users.filter((u) => u.role === "executor" && u.active);
   const priorities: { key: "high" | "medium" | "low"; label: string; active: string; inactive: string }[] = [
     { key: "high", label: "Высокий", active: "border-red-500/50 bg-red-500/10 text-red-400", inactive: "border-white/10 text-white/40 bg-white/5" },
     { key: "medium", label: "Средний", active: "border-amber-500/50 bg-amber-500/10 text-amber-400", inactive: "border-white/10 text-white/40 bg-white/5" },
@@ -973,11 +1219,16 @@ function NewTaskScreen({ newTask, setNewTask, onCreate, onBack }: {
         </div>
         <div>
           <label className="field-label">Описание</label>
-          <textarea className="input-field resize-none" rows={3} placeholder="Подробное описание задачи..." value={newTask.description} onChange={(e) => setNewTask((p) => ({ ...p, description: e.target.value }))} />
+          <textarea className="input-field resize-none" rows={3} placeholder="Подробное описание..." value={newTask.description} onChange={(e) => setNewTask((p) => ({ ...p, description: e.target.value }))} />
         </div>
         <div>
           <label className="field-label">Исполнитель</label>
-          <input className="input-field" placeholder="Имя исполнителя" value={newTask.assignee} onChange={(e) => setNewTask((p) => ({ ...p, assignee: e.target.value }))} />
+          <select className="input-field" value={newTask.assignee} onChange={(e) => setNewTask((p) => ({ ...p, assignee: e.target.value }))}>
+            <option value="">— Выберите исполнителя —</option>
+            {executors.map((u) => (
+              <option key={u.id} value={u.name}>{u.name} ({u.department})</option>
+            ))}
+          </select>
         </div>
         <div>
           <label className="field-label">Срок выполнения</label>
@@ -995,21 +1246,13 @@ function NewTaskScreen({ newTask, setNewTask, onCreate, onBack }: {
           <label className="field-label">Приоритет</label>
           <div className="flex gap-2">
             {priorities.map((p) => (
-              <button
-                key={p.key}
-                onClick={() => setNewTask((prev) => ({ ...prev, priority: p.key }))}
-                className={`flex-1 py-2 rounded-xl border text-sm font-semibold transition-all ${newTask.priority === p.key ? p.active : p.inactive}`}
-              >
+              <button key={p.key} onClick={() => setNewTask((prev) => ({ ...prev, priority: p.key }))} className={`flex-1 py-2 rounded-xl border text-sm font-semibold transition-all ${newTask.priority === p.key ? p.active : p.inactive}`}>
                 {p.label}
               </button>
             ))}
           </div>
         </div>
-        <button
-          onClick={onCreate}
-          disabled={!newTask.title}
-          className="btn-primary w-full mt-2 disabled:opacity-40 disabled:cursor-not-allowed"
-        >
+        <button onClick={onCreate} disabled={!newTask.title} className="btn-primary w-full disabled:opacity-40 disabled:cursor-not-allowed">
           <Icon name="Plus" size={18} />
           Создать задачу
         </button>
@@ -1018,13 +1261,15 @@ function NewTaskScreen({ newTask, setNewTask, onCreate, onBack }: {
   );
 }
 
+/* ═══════════════════════════════ BOTTOM NAV ═══════════════════════════════ */
+
 function BottomNav({ activeTab, onNav, role, unreadCount }: {
   activeTab: string;
   onNav: (tab: "tasks" | "camera" | "review" | "profile" | "notifications") => void;
-  role: Role;
+  role: "manager" | "executor";
   unreadCount: number;
 }) {
-  const allItems: { key: "tasks" | "camera" | "review" | "profile" | "notifications"; icon: string; label: string; roles?: Role[] }[] = [
+  const allItems: { key: "tasks" | "camera" | "review" | "profile" | "notifications"; icon: string; label: string; roles?: ("manager" | "executor")[] }[] = [
     { key: "tasks", icon: "LayoutGrid", label: "Задачи" },
     { key: "camera", icon: "Camera", label: "Камера", roles: ["executor"] },
     { key: "review", icon: "Eye", label: "Проверка", roles: ["manager"] },
@@ -1037,11 +1282,7 @@ function BottomNav({ activeTab, onNav, role, unreadCount }: {
   return (
     <nav className="bottom-nav">
       {items.map((item) => (
-        <button
-          key={item.key}
-          onClick={() => onNav(item.key)}
-          className={`nav-item ${activeTab === item.key ? "nav-item-active" : "nav-item-inactive"}`}
-        >
+        <button key={item.key} onClick={() => onNav(item.key)} className={`nav-item ${activeTab === item.key ? "nav-item-active" : "nav-item-inactive"}`}>
           <div className="relative">
             <Icon name={item.icon} size={22} />
             {item.key === "notifications" && unreadCount > 0 && (

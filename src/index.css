@@ -590,6 +590,99 @@
     padding: 0 3px;
   }
 
+  /* ── Login error / success ── */
+  .login-error {
+    @apply flex items-start gap-2 p-3 rounded-xl;
+    background: rgba(239, 68, 68, 0.08);
+    border: 1px solid rgba(239, 68, 68, 0.25);
+  }
+  .admin-success {
+    @apply flex items-center gap-2 p-3 rounded-xl;
+    background: rgba(16, 185, 129, 0.08);
+    border: 1px solid rgba(16, 185, 129, 0.25);
+  }
+  .input-field-error {
+    border-color: rgba(239, 68, 68, 0.5) !important;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1) !important;
+  }
+  .login-spinner {
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    flex-shrink: 0;
+  }
+
+  /* ── Demo chips ── */
+  .demo-chip {
+    @apply flex items-center justify-between w-full px-3 py-2 rounded-xl transition-all duration-150;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    &:hover {
+      background: rgba(255, 255, 255, 0.08);
+    }
+  }
+
+  /* ── Admin ── */
+  .admin-badge-icon {
+    @apply flex items-center justify-center rounded-2xl;
+    width: 44px;
+    height: 44px;
+    background: linear-gradient(135deg, #f43f5e, #e11d48);
+    box-shadow: 0 4px 16px rgba(244, 63, 94, 0.4);
+    flex-shrink: 0;
+  }
+  .user-avatar-admin {
+    @apply flex items-center justify-center rounded-full font-bold text-white flex-shrink-0;
+    width: 44px;
+    height: 44px;
+    font-size: 14px;
+  }
+  .user-action-btn {
+    @apply flex items-center justify-center rounded-xl transition-all duration-150;
+    width: 32px;
+    height: 32px;
+    &:hover {
+      opacity: 0.8;
+      transform: scale(1.05);
+    }
+  }
+
+  /* ── Modal ── */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(8px);
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    z-index: 50;
+    padding: 20px;
+  }
+  .modal-box {
+    @apply w-full max-w-sm rounded-3xl p-6;
+    background: #1a1a2e;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    margin-bottom: 20px;
+  }
+
+  /* ── Select ── */
+  select.input-field {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='rgba(255,255,255,0.4)' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right: 40px;
+    cursor: pointer;
+  }
+  select.input-field option {
+    background: #1a1a2e;
+    color: white;
+  }
+
   /* ── Scrollbar ── */
   .no-scrollbar::-webkit-scrollbar {
     display: none;
@@ -637,6 +730,11 @@
     to {
       opacity: 1;
       transform: scale(1);
+    }
+  }
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
     }
   }
   .animate-float {
